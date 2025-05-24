@@ -214,5 +214,5 @@ def initialize_database():
         db.session.commit()
 
 if __name__ == '__main__':
-    initialize_database()
-    socketio.run(app, debug=True)
+    #initialize_database()
+    socketio.run(app)
