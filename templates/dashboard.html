@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Welcome, {{ current_user.username }}</h2>
+        <h4 class="mt-4">Online Users</h4>
+        <div class="list-group" id="online-users-list">
+            {% for user in online_users %}
+                {% if user.id != current_user.id %}
+                    <a href="{{ url_for('chat', recipient_id=user.id) }}" class="list-group-item list-group-item-action" data-user-id="{{ user.id }}">
+                        {{ user.username }}
+                        <span class="badge bg-success rounded-pill float-end">Online</span>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Handle user status updates
+    socket.on('user_status', function(data) {
+        const userElement = document.querySelector(`[data-user-id="${data.user_id}"]`);
+        const badge = userElement ? userElement.querySelector('.badge') : null;
+        
+        if (userElement && badge) {
+            if (data.online) {
+                badge.className = 'badge bg-success rounded-pill float-end';
+                badge.textContent = 'Online';
+            } else {
+                badge.className = 'badge bg-secondary rounded-pill float-end';
+                badge.textContent = 'Offline';
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

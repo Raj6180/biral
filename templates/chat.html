@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Chat with {{ recipient.username }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Chat with {{ recipient.username }}</h2>
+        
+        <div class="card mb-3">
+            <div class="card-body" id="message-container" style="height: 400px; overflow-y: auto;">
+                {% for message in messages %}
+                    <div class="mb-3 {% if message.sender_id == current_user.id %}text-end{% endif %}">
+                        <div class="d-flex flex-column">
+                            <strong>{{ message.sender.username }}</strong>
+                            <div class="p-2 rounded {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %}" style="max-width: 70%;">
+                                {{ message.content }}
+                            </div>
+                            <small class="text-muted">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <form id="message-form">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="message-input" placeholder="Type your message..." required>
+                <button class="btn btn-primary" type="submit">Send</button>
+            </div>
+        </form>
+        
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Join the chat room
+    socket.emit('join_chat', {
+        recipient_id: {{ recipient.id }}
+    });
+    
+    // Handle sending messages
+    document.getElementById('message-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+        
+        if (message) {
+            socket.emit('send_message', {
+                recipient_id: {{ recipient.id }},
+                content: message
+            });
+            input.value = '';
+        }
+    });
+    
+    // Handle receiving messages
+    socket.on('receive_message', function(data) {
+        const messageContainer = document.getElementById('message-container');
+        const isSender = data.sender_id == {{ current_user.id }};
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `mb-3 ${isSender ? 'text-end' : ''}`;
+        
+        messageDiv.innerHTML = `
+            <div class="d-flex flex-column">
+                <strong>${data.sender_name}</strong>
+                <div class="p-2 rounded ${isSender ? 'bg-primary text-white' : 'bg-light'}" style="max-width: 70%;">
+                    ${data.content}
+                </div>
+                <small class="text-muted">${data.timestamp}</small>
+            </div>
+        `;
+        
+        messageContainer.appendChild(messageDiv);
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    });
+    
+    // Scroll to bottom of messages
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageContainer = document.getElementById('message-container');
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    });
+</script>
+{% endblock %}
+{% endblock %}
