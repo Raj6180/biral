@@ -1,11 +1,13 @@
+# Exported from Render on 2025-05-24T06:33:42Z
 services:
-  - type: web
-    name: your-app-name
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --worker-class gevent -w 1 app:app
-    envVars:
-      - key: SECRET_KEY
-        generateValue: true
-      - key: PYTHON_VERSION
-        value: 3.11.11
+- type: web
+  name: biral
+  runtime: python
+  repo: https://github.com/Raj6180/biral
+  plan: free
+  region: oregon
+  buildCommand: pip install -r requirements.txt
+  startCommand: gunicorn app:app
+  autoDeployTrigger: commit
+version: "1"
+
