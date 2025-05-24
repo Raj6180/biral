@@ -6,3 +6,4 @@ flask-socketio
 flask-login
 Flask-Migrate
 gunicorn
+eventlet
